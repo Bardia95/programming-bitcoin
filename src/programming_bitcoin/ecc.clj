@@ -30,7 +30,6 @@
 (defn assert= [p p2]
   (assert (= p p2) "Fields need to be of the same prime order"))
 
-
 (defrecord FieldElement [e p])
 
 (extend-type FieldElement
@@ -53,12 +52,10 @@
     (let [k (mod k (dec p))]
       (FieldElement. (modpow e k p) p))))
 
-
 (defn make-field-element [e p]
   (if (and (<= 0 e) (< e p) (prime? p))
     (FieldElement. e p)
     (println "Invalid Field Element")))
-
 
 (defrecord Point [x y a b])
 
@@ -68,29 +65,29 @@
 (defn make-point [x y a b]
   (if (and (= x ##Inf) (= y ##Inf))
     (Point. x y a b)
-    (if (not= (** y 2) (+ (** x 3) (* a x) b))
-      (println (str "(" x ", " y ") is not on the curve."))
+    (do
+      (assert (= (** y 2) (+ (** x 3)) (* a x) b))
       (Point. x y a b))))
 
 (extend-type Point
   PointOperations
   (+p [{x1 :x y1 :y a1 :a b1 :b}
        {x2 :x y2 :y a2 :a b2 :b}]
-    (if (or (not= a1 a2) (not= b1 b2))
-      (println "The points are not on the same curve")
-      (if (= x1 ##Inf)
-        (Point. x2 y2 a2 b2)
-        (if (= x2 ##Inf)
-          (Point. x1 y1 a1 b1)
-          (if (and (= x1 x2) (not= y1 y2))
-            (Point. ##Inf ##Inf a1 b2)
-            (if (not= x1 x2)
-              (let [s (/ (- y2 y1) (- x2 x1))
-                    x3 (- (** s 2) x1 x2)
-                    y3 (-  (* s (- x1 x3)) y1)]
-                (Point. x3 y3 a1 b1))
-              (if (and (= x1 x2) (= y1 y2))
-                (let [s (/ (+ (* 3 (** x1 2) a1)) (* 2 y1))
-                      x3 (- (** s 2) x1 x2)
-                      y3 (- (* s (- x1 x3)) y1)]
-                  (Point. x3 y3 a1 b1))))))))))
+    (cond
+      (= x1 ##Inf) (Point. x2 y2 a2 b2)
+      (= x2 ##Inf) (Point. x1 y1 a1 b1)
+      (and (= x1 x2) (not= y1 y2)) (Point. ##Inf ##Inf a1 b2)
+      (not= x1 x2) (let [s (slope x1 x2 y1 y2)
+                         x3 (- (** s 2) x1 x2)
+                         y3 (-  (* s (- x1 x3)) y1)]
+                     (Point. x3 y3 a1 b1))
+      (and (= x1 x2) (= y1 y2)) (let [s (tangent-slope x y a)
+                                      x3 (- (** s 2) x1 x2)
+                                      y3 (- (* s (- x1 x3)) y1)]
+                                  (Point. x3 y3 a1 b1)))))
+
+(defn slope [x1 x2 y1 y2]
+(/ (- y2 y1) (- x2 x1)))
+
+(defn tangent-slope [x y a]
+(/ (+ (* 3 (** x 2) a)) (* 2 y)))
