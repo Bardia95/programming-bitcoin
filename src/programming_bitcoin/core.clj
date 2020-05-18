@@ -65,7 +65,7 @@
   (+p    [x y]))
 
 (defn make-point [x y a b]
-  (if (and (= x nil) (= y nil))
+  (if (and (= x ##Inf) (= y ##Inf))
     (Point. x y a b)
     (if (not= (** y 2) (+ (** x 3) (* a x) b))
       (println (str "(" x ", " y ") is not on the curve."))
@@ -77,12 +77,12 @@
        {x2 :x y2 :y a2 :a b2 :b}]
     (if (or (not= a1 a2) (not= b1 b2))
       (println "The points are not on the same curve")
-      (if (= x1 nil)
+      (if (= x1 ##Inf)
         (Point. x2 y2 a2 b2)
-        (if (= x2 nil)
+        (if (= x2 ##Inf)
           (Point. x1 y1 a1 b1)
           (if (and (= x1 x2) (not= y1 y2))
-            (Point. nil nil a1 b2)
+            (Point. ##Inf ##Inf a1 b2)
             (if (not= x1 x2)
               (let [s (/ (- y2 y1) (- x2 x1))
                     x3 (- (** s 2) x1 x2)
