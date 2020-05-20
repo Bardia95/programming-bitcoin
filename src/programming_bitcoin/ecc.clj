@@ -1,18 +1,49 @@
-(ns programming-bitcoin.ecc)
+(ns programming-bitcoin.ecc
+  (:import (java.math BigInteger)
+           (java.util Random)))
 
 
-(defn modpow [b e m]
-  (mod (reduce #(mod (* %1 %2) m) (repeat e b)) m))
+(defn **
+  [b e]
+  (reduce * (repeat (bigint e) (bigint b))))
 
-(defn ** [b e]
-  (reduce * (repeat e b)))
+(defn mod**
+  "Returns "
+  [b e m]
+  (cond (= e 0) 1
+        (even? e) (rem (** (mod** b (/ e 2) m) 2) m)
+        :else (rem (* b (mod** b (dec e) m)) m)))
 
-(defn fermat-test [n]
-  (let [a (inc (rand-int (dec n)))]
-    (= (modpow a n n) a)))
+(defn rand-bigint
+  "Returns a random integer with bitlength n."
+  [n]
+  (->> (new Random)
+       (new BigInteger n)
+       bigint))
 
-(defn prime? [n]
-  (every? true? (take 50 (repeatedly #(fermat-test n)))))
+(defn uniform-number
+  "Return a random number that is between 1 and n-1"
+  [n]
+  (+ 1 (rand-bigint (->
+                     (- n 2)
+                     str
+                     count))))
+
+(defn prime?
+  "Fermat based primality test"
+  [n]
+  (cond
+    (= n 1) false
+    (= n 2) true
+    :else (let [pow (dec n)]
+            (loop [k 50]
+              (if (= k 0)
+                true
+                (let [res (mod** (uniform-number n) pow n)]
+                  (if-not (= res 1)
+                    false
+                    (recur (dec k)))))))))
+
 
 (defn make-finite-field [p]
   (if (prime? p)
@@ -47,10 +78,10 @@
     (FieldElement. (mod (* e e2) p) p))
   (divf [{e :e p :p} {e2 :e p2 :p}]
     (assert= p p2)
-    (FieldElement. (int (mod (* e (modpow e2 (- p 2) p)) p)) p))
+    (FieldElement. (int (mod (* e (mod** e2 (- p 2) p)) p)) p))
   (**f [{e :e p :p} k]
     (let [k (mod k (dec p))]
-      (FieldElement. (modpow e k p) p))))
+      (FieldElement. (mod** e k p) p))))
 
 (defn make-field-element [e p]
   (if (and (<= 0 e) (< e p) (prime? p))
