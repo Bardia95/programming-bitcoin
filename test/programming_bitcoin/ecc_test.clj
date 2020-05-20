@@ -60,7 +60,7 @@
     (testing "*f"
       (is (= (*f g h) (->FieldElement 22 31))))
     (testing "**f"
-      (is (= (**f d 3)         (->FieldElement 15 31)))
+      (is (= (**f d 3)          (->FieldElement 15 31)))
       (is (= (*f m (**f l 5)))) (->FieldElement 16 31))
     (testing "divf"
       (is (= (divf i g)         (->FieldElement 4 31)))
