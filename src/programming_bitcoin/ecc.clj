@@ -92,7 +92,7 @@
 (defrecord Point [x y a b])
 
 (defprotocol PointOperations
-  (+p    [x y]))
+  (+p [x y]))
 
 (defn make-point [x y a b]
   (if (and (= x ##Inf) (= y ##Inf))

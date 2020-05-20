@@ -33,36 +33,42 @@
     (testing "massive prime"
       (is (= (prime? 290245329165570025116016487217740287508837913295571609463914348778319654489118435855243301969001872061575755804802874062021927719647357060447135321577028929269578574760547268310055056867386875959045119093967972205124270441648450825188877095173754196346551952542599226295413057787340278528252358809329N) true)))))
 
-(deftest field-ops
-  (let [p 31
-        a (->FieldElement 2 p)
-        b (->FieldElement 2 p)
-        c (->FieldElement 15 p)
-        d (->FieldElement 17 p)
-        e (->FieldElement 21 p)
-        f (->FieldElement 30 p)
-        g (->FieldElement 24 p)
-        h (->FieldElement 19 p)
-        i (->FieldElement 3 p)
-        j (->FieldElement 4 p)
-        k (->FieldElement 11 p)
-        l (->FieldElement 5 p)
-        m (->FieldElement 18 p)]
-    (testing "=f"
-      (is (= (=f a b) true))
-      (is (= (=f a c) false)))
-    (testing "+f"
-      (is (= (+f a c) (->FieldElement 17 31)))
-      (is (= (+f d e) (->FieldElement 7 31))))
-    (testing "-f"
-      (is (= (-f c b) (->FieldElement 13 31)))
-      (is (= (-f c f) (->FieldElement 16 31))))
-    (testing "*f"
-      (is (= (*f g h) (->FieldElement 22 31))))
-    (testing "**f"
-      (is (= (**f d 3)          (->FieldElement 15 31)))
-      (is (= (*f m (**f l 5)))) (->FieldElement 16 31))
-    (testing "divf"
-      (is (= (divf i g)         (->FieldElement 4 31)))
-      (is (= (**f d -3)         (->FieldElement 29 31)))
-      (is (= (*f k (**f j -4))) (->FieldElement 13 31)))))
+(deftest field-elements
+  (testing "make-field-element"
+    (is (= (make-field-element 0 7)  (->FieldElement 0 7)))
+    (is (= (make-field-element 1 7)  (->FieldElement 1 7)))
+    (is (= (make-field-element 6 31) (->FieldElement 6 31))))
+  (testing "field-ops"
+    (let [p 31
+          a (->FieldElement 2 p)
+          b (->FieldElement 2 p)
+          c (->FieldElement 15 p)
+          d (->FieldElement 17 p)
+          e (->FieldElement 21 p)
+          f (->FieldElement 30 p)
+          g (->FieldElement 24 p)
+          h (->FieldElement 19 p)
+          i (->FieldElement 3 p)
+          j (->FieldElement 4 p)
+          k (->FieldElement 11 p)
+          l (->FieldElement 5 p)
+          m (->FieldElement 18 p)]
+      (testing "=f"
+        (is (= (=f a b) true))
+        (is (= (=f a c) false)))
+      (testing "+f"
+        (is (= (+f a c) (->FieldElement 17 31)))
+        (is (= (+f d e) (->FieldElement 7 31))))
+      (testing "-f"
+        (is (= (-f c b) (->FieldElement 13 31)))
+        (is (= (-f c f) (->FieldElement 16 31))))
+      (testing "*f"
+        (is (= (*f g h) (->FieldElement 22 31))))
+      (testing "**f"
+        (is (= (**f d 3)          (->FieldElement 15 31)))
+        (is (= (*f m (**f l 5)))) (->FieldElement 16 31))
+      (testing "divf"
+        (is (= (divf i g)         (->FieldElement 4 31)))
+        (is (= (**f d -3)         (->FieldElement 29 31)))
+        (is (= (*f k (**f j -4))) (->FieldElement 13 31))))))
+
