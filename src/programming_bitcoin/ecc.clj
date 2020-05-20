@@ -96,13 +96,13 @@
 
 (defn on-curve?
   [x y a b]
-  (= (** y 2) (+ (** x 3)) (* a x) b))
+  (= (int (** y 2)) (int (+ (** x 3) (* a x) b))))
 
 (defn make-point [x y a b]
   (if (and (= x ##Inf) (= y ##Inf))
     (Point. x y a b)
     (do
-      (assert on-curve? x y a b)
+      (assert (on-curve? x y a b))
       (Point. x y a b))))
 
 (defn slope [x1 x2 y1 y2]

@@ -72,3 +72,7 @@
         (is (= (**f d -3)         (->FieldElement 29 31)))
         (is (= (*f k (**f j -4))) (->FieldElement 13 31))))))
 
+(deftest curve-points
+  (testing "make-point"
+    (is (= (make-point -1 -1 5 7)  (->Point -1 -1 5 7))
+        (= (make-point 18 77 5 7)  (->Point 18 77 5 7)))))
