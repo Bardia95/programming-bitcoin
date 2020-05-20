@@ -4,11 +4,12 @@
 
 
 (defn **
+  "Big integer exponentiation"
   [b e]
   (reduce * (repeat (bigint e) (bigint b))))
 
 (defn mod**
-  "Returns "
+  "Runs modulo on every round of self-multiplication"
   [b e m]
   (cond (= e 0) 1
         (even? e) (rem (** (mod** b (/ e 2) m) 2) m)
@@ -45,10 +46,11 @@
                     (recur (dec k)))))))))
 
 
-(defn make-finite-field [p]
-  (if (prime? p)
-    (into (sorted-set) (range 0 p))
-    "Please supply a prime"))
+(defn make-finite-field
+  "Makes a finite field from 0 to prime-1"
+  [p]
+  (assert (prime? p) "Please supply a prime order")
+  (into (sorted-set) (range 0 p)))
 
 (defprotocol FieldOperations
   (=f    [x y])
