@@ -74,5 +74,6 @@
 
 (deftest curve-points
   (testing "make-point"
-    (is (= (make-point -1 -1 5 7)  (->Point -1 -1 5 7))
-        (= (make-point 18 77 5 7)  (->Point 18 77 5 7)))))
+    (is (= (make-point -1 -1 5 7)       (->Point -1 -1 5 7)))
+    (is (= (make-point 18 77 5 7)       (->Point 18 77 5 7)))
+    (is (= (make-point ##Inf ##Inf 5 7) (->Point ##Inf ##Inf 5 7)))))
