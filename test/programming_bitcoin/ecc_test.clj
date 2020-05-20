@@ -42,7 +42,10 @@
         e (->FieldElement 21 p)
         f (->FieldElement 30 p)
         g (->FieldElement 24 p)
-        h (->FieldElement 19 p)]
+        h (->FieldElement 19 p)
+        i (->FieldElement 3 p)
+        j (->FieldElement 4 p)
+        k (->FieldElement 11 p)]
     (testing "=f"
       (is (= (=f a b) true))
       (is (= (=f a c) false)))
@@ -53,4 +56,8 @@
       (is (= (-f c b) (->FieldElement 13 31)))
       (is (= (-f c f) (->FieldElement 16 31))))
     (testing "*f"
-      (is (= (*f g h) (->FieldElement 22 31))))))
+      (is (= (*f g h) (->FieldElement 22 31))))
+    (testing "divf"
+      (is (= (divf i g) (->FieldElement 4 31)))
+      (is (= (**f d -3) (->FieldElement 29 31)))
+      (is (= (*f k (**f j -4))) (->FieldElement 13 31)))))
