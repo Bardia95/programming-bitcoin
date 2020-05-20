@@ -34,10 +34,10 @@
       (is (= (prime? 290245329165570025116016487217740287508837913295571609463914348778319654489118435855243301969001872061575755804802874062021927719647357060447135321577028929269578574760547268310055056867386875959045119093967972205124270441648450825188877095173754196346551952542599226295413057787340278528252358809329N) true)))))
 
 (deftest field-elements
-  (testing "make-field-element"
-    (is (= (make-field-element 0 7)  (->FieldElement 0 7)))
-    (is (= (make-field-element 1 7)  (->FieldElement 1 7)))
-    (is (= (make-field-element 6 31) (->FieldElement 6 31))))
+  (testing "make-fe"
+    (is (= (make-fe 0 7)  (->FieldElement 0 7)))
+    (is (= (make-fe 1 7)  (->FieldElement 1 7)))
+    (is (= (make-fe 6 31) (->FieldElement 6 31))))
   (testing "field-ops"
     (let [p 31
           a (->FieldElement 2 p)
@@ -73,10 +73,10 @@
         (is (= (*f k (**f j -4))) (->FieldElement 13 31))))))
 
 (deftest curve-points
-  (testing "make-point"
-    (is (= (make-point -1 -1 5 7)       (->Point -1 -1 5 7)))
-    (is (= (make-point 18 77 5 7)       (->Point 18 77 5 7)))
-    (is (= (make-point ##Inf ##Inf 5 7) (->Point ##Inf ##Inf 5 7))))
+  (testing "make-pt"
+    (is (= (make-pt -1 -1 5 7)       (->Point -1 -1 5 7)))
+    (is (= (make-pt 18 77 5 7)       (->Point 18 77 5 7)))
+    (is (= (make-pt ##Inf ##Inf 5 7) (->Point ##Inf ##Inf 5 7))))
   (testing "point-ops"
     (let [a (->Point ##Inf ##Inf 5 7)
           b (->Point 2 5 5 7)

@@ -47,7 +47,7 @@
 
 (defrecord FieldElement [e p])
 
-(defprotocol FieldOperations
+(defprotocol FieldOps
   (=f    [x y])
   (+f    [x y])
   (-f    [x y])
@@ -55,7 +55,7 @@
   (divf  [x y])
   (**f   [x k]))
 
-(defn make-field-element
+(defn make-fe
   "Constructor function for Field Element with validations"
   [e p]
   (assert (and (<= 0 e) (< e p) (prime? p)) "Invalid Field Element")
@@ -67,29 +67,29 @@
   (assert (= p p2) "Fields need to be of the same prime order"))
 
 (extend-type FieldElement
-  FieldOperations
+  FieldOps
   (=f [{e :e p :p} {e2 :e p2 :p}]
     (and (= e e2) (= p p2)))
   (+f [{e :e p :p} {e2 :e p2 :p}]
     (assert= p p2)
-    (FieldElement. (mod (+ e e2) p) p))
+    (make-fe (mod (+ e e2) p) p))
   (-f [{e :e p :p} {e2 :e p2 :p}]
     (assert= p p2)
-    (FieldElement. (mod (- e e2) p) p))
+    (make-fe (mod (- e e2) p) p))
   (*f [{e :e p :p} {e2 :e p2 :p}]
     (assert= p p2)
-    (FieldElement. (mod (* e e2) p) p))
+    (make-fe (mod (* e e2) p) p))
   (divf [{e :e p :p} {e2 :e p2 :p}]
     (assert= p p2)
-    (FieldElement. (int (mod (* e (mod** e2 (- p 2) p)) p)) p))
+    (make-fe (int (mod (* e (mod** e2 (- p 2) p)) p)) p))
   (**f [{e :e p :p} k]
     (let [k (mod k (dec p))]
-      (FieldElement. (mod** e k p) p))))
+      (make-fe (mod** e k p) p))))
 
 
 (defrecord Point [x y a b])
 
-(defprotocol PointOperations
+(defprotocol PointOps
   (+p [x y]))
 
 (defn on-curve?
@@ -97,7 +97,7 @@
   [x y a b]
   (= (int (** y 2)) (int (+ (** x 3) (* a x) b))))
 
-(defn make-point
+(defn make-pt
   "Constructor function for elliptic curve points with validations"
   [x y a b]
   (if (and (= x ##Inf) (= y ##Inf))
@@ -117,18 +117,18 @@
   (int (/ (+ (* 3 (** x 2)) a) (* 2 y))))
 
 (extend-type Point
-  PointOperations
+  PointOps
   (+p [{x1 :x y1 :y a1 :a b1 :b}
        {x2 :x y2 :y a2 :a b2 :b}]
     (cond
-      (= x1 ##Inf) (make-point x2 y2 a2 b2)
-      (= x2 ##Inf) (make-point x1 y1 a1 b1)
-      (and (= x1 x2) (not= y1 y2)) (make-point ##Inf ##Inf a1 b2)
+      (= x1 ##Inf) (make-pt x2 y2 a2 b2)
+      (= x2 ##Inf) (make-pt x1 y1 a1 b1)
+      (and (= x1 x2) (not= y1 y2)) (make-pt ##Inf ##Inf a1 b2)
       (not= x1 x2) (let [s (slope x1 x2 y1 y2)
                          x3 (- (int (** s 2)) x1 x2)
                          y3 (-  (* s (- x1 x3)) y1)]
-                     (make-point x3 y3 a1 b1))
+                     (make-pt x3 y3 a1 b1))
       (and (= x1 x2) (= y1 y2)) (let [s (tangent-slope x1 y1 a1)
                                       x3 (- (int (** s 2)) x1 x2)
                                       y3 (- (* s (- x1 x3)) y1)]
-                                  (make-point x3 y3 a1 b1)))))
+                                  (make-pt x3 y3 a1 b1)))))
