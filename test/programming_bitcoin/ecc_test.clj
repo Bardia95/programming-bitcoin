@@ -33,17 +33,19 @@
       (is (= (prime? 290245329165570025116016487217740287508837913295571609463914348778319654489118435855243301969001872061575755804802874062021927719647357060447135321577028929269578574760547268310055056867386875959045119093967972205124270441648450825188877095173754196346551952542599226295413057787340278528252358809329N) true)))))
 
 
-(def a (->FieldElement 2 31))
-(def b (->FieldElement 2 31))
-(def c (->FieldElement 15 31))
-(def d (->FieldElement 17 31))
-(def e (->FieldElement 21 31))
-
-
 (deftest field-ops
-  (testing "=f"
-    (is (= (=f a b) true))
-    (is (= (=f a c) false)))
-  (testing "+f"
-    (is (= (+f d e) (->FieldElement 7 31)))
-    (is (= (+)))))
+  (let [a (->FieldElement 2 31)
+        b (->FieldElement 2 31)
+        c (->FieldElement 15 31)
+        d (->FieldElement 17 31)
+        e (->FieldElement 21 31)
+        f (->FieldElement 30 31)]
+    (testing "=f"
+      (is (= (=f a b) true))
+      (is (= (=f a c) false)))
+    (testing "+f"
+      (is (= (+f a c) (->FieldElement 17 31)))
+      (is (= (+f d e) (->FieldElement 7 31))))
+    (testing "-f"
+      (is (= (-f c b) (->FieldElement 13 31)))
+      (is (= (-f c f) (->FieldElement 16 31))))))
