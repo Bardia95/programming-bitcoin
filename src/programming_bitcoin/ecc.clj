@@ -86,9 +86,8 @@
       (FieldElement. (mod** e k p) p))))
 
 (defn make-field-element [e p]
-  (if (and (<= 0 e) (< e p) (prime? p))
-    (FieldElement. e p)
-    (println "Invalid Field Element")))
+  (assert (and (<= 0 e) (< e p) (prime? p)) "Invalid Field Element")
+  (FieldElement. e p))
 
 (defrecord Point [x y a b])
 
