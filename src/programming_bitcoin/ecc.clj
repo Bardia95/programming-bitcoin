@@ -69,6 +69,12 @@
       (assert (= (** y 2) (+ (** x 3)) (* a x) b))
       (Point. x y a b))))
 
+(defn slope [x1 x2 y1 y2]
+  (/ (- y2 y1) (- x2 x1)))
+
+(defn tangent-slope [x y a]
+  (/ (+ (* 3 (** x 2) a)) (* 2 y)))
+
 (extend-type Point
   PointOperations
   (+p [{x1 :x y1 :y a1 :a b1 :b}
@@ -81,13 +87,7 @@
                          x3 (- (** s 2) x1 x2)
                          y3 (-  (* s (- x1 x3)) y1)]
                      (Point. x3 y3 a1 b1))
-      (and (= x1 x2) (= y1 y2)) (let [s (tangent-slope x y a)
+      (and (= x1 x2) (= y1 y2)) (let [s (tangent-slope x1 y1 a1)
                                       x3 (- (** s 2) x1 x2)
                                       y3 (- (* s (- x1 x3)) y1)]
                                   (Point. x3 y3 a1 b1)))))
-
-(defn slope [x1 x2 y1 y2]
-(/ (- y2 y1) (- x2 x1)))
-
-(defn tangent-slope [x y a]
-(/ (+ (* 3 (** x 2) a)) (* 2 y)))
