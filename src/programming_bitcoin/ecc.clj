@@ -106,10 +106,10 @@
       (Point. x y a b))))
 
 (defn slope [x1 x2 y1 y2]
-  (/ (- y2 y1) (- x2 x1)))
+  (int (/ (- y2 y1) (- x2 x1))))
 
 (defn tangent-slope [x y a]
-  (/ (+ (* 3 (** x 2) a)) (* 2 y)))
+  (int (/ (+ (* 3 (** x 2)) a) (* 2 y))))
 
 (extend-type Point
   PointOperations
@@ -120,10 +120,10 @@
       (= x2 ##Inf) (make-point x1 y1 a1 b1)
       (and (= x1 x2) (not= y1 y2)) (make-point ##Inf ##Inf a1 b2)
       (not= x1 x2) (let [s (slope x1 x2 y1 y2)
-                         x3 (- (** s 2) x1 x2)
+                         x3 (- (int (** s 2)) x1 x2)
                          y3 (-  (* s (- x1 x3)) y1)]
                      (make-point x3 y3 a1 b1))
       (and (= x1 x2) (= y1 y2)) (let [s (tangent-slope x1 y1 a1)
-                                      x3 (- (** s 2) x1 x2)
+                                      x3 (- (int (** s 2)) x1 x2)
                                       y3 (- (* s (- x1 x3)) y1)]
                                   (make-point x3 y3 a1 b1)))))

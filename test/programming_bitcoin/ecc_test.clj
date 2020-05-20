@@ -76,4 +76,20 @@
   (testing "make-point"
     (is (= (make-point -1 -1 5 7)       (->Point -1 -1 5 7)))
     (is (= (make-point 18 77 5 7)       (->Point 18 77 5 7)))
-    (is (= (make-point ##Inf ##Inf 5 7) (->Point ##Inf ##Inf 5 7)))))
+    (is (= (make-point ##Inf ##Inf 5 7) (->Point ##Inf ##Inf 5 7))))
+  (testing "point-ops"
+    (let [a (->Point ##Inf ##Inf 5 7)
+          b (->Point 2 5 5 7)
+          c (->Point 2 -5 5 7)
+          d (->Point 3 7 5 7)
+          e (->Point -1 -1 5 7)
+          f (->Point 18 77 5 7)]
+      (testing "point at infinity + point"
+        (is (= (+p a b) b))
+        (is (= (+p b c) a))
+        (testing "commutativity"
+          (is (= (+p b a) b))))
+      (testing "different points"
+        (is (= (+p d e) c)))
+      (testing "same point"
+        (is (= (+p e e) f))))))
