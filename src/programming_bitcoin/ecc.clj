@@ -45,12 +45,7 @@
                     false
                     (recur (dec k)))))))))
 
-
-(defn make-finite-field
-  "Makes a finite field from 0 to prime-1"
-  [p]
-  (assert (prime? p) "Please supply a prime order")
-  (into (sorted-set) (range 0 p)))
+(defrecord FieldElement [e p])
 
 (defprotocol FieldOperations
   (=f    [x y])
@@ -60,10 +55,16 @@
   (divf  [x y])
   (**f   [x k]))
 
-(defn assert= [p p2]
-  (assert (= p p2) "Fields need to be of the same prime order"))
+(defn make-field-element
+  "Constructor function for Field Element with validations"
+  [e p]
+  (assert (and (<= 0 e) (< e p) (prime? p)) "Invalid Field Element")
+  (FieldElement. e p))
 
-(defrecord FieldElement [e p])
+(defn assert=
+  "Field equality assertion"
+  [p p2]
+  (assert (= p p2) "Fields need to be of the same prime order"))
 
 (extend-type FieldElement
   FieldOperations
@@ -85,9 +86,6 @@
     (let [k (mod k (dec p))]
       (FieldElement. (mod** e k p) p))))
 
-(defn make-field-element [e p]
-  (assert (and (<= 0 e) (< e p) (prime? p)) "Invalid Field Element")
-  (FieldElement. e p))
 
 (defrecord Point [x y a b])
 
@@ -95,20 +93,27 @@
   (+p [x y]))
 
 (defn on-curve?
+  "Checks if point is on elliptic curve"
   [x y a b]
   (= (int (** y 2)) (int (+ (** x 3) (* a x) b))))
 
-(defn make-point [x y a b]
+(defn make-point
+  "Constructor function for elliptic curve points with validations"
+  [x y a b]
   (if (and (= x ##Inf) (= y ##Inf))
     (Point. x y a b)
     (do
       (assert (on-curve? x y a b))
       (Point. x y a b))))
 
-(defn slope [x1 x2 y1 y2]
+(defn slope
+  "Calculates slope of a line"
+  [x1 x2 y1 y2]
   (int (/ (- y2 y1) (- x2 x1))))
 
-(defn tangent-slope [x y a]
+(defn tangent-slope
+  "Calculates the slope of a tangent line to the elliptic curve"
+  [x y a]
   (int (/ (+ (* 3 (** x 2)) a) (* 2 y))))
 
 (extend-type Point
