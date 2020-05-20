@@ -45,7 +45,9 @@
         h (->FieldElement 19 p)
         i (->FieldElement 3 p)
         j (->FieldElement 4 p)
-        k (->FieldElement 11 p)]
+        k (->FieldElement 11 p)
+        l (->FieldElement 5 p)
+        m (->FieldElement 18 p)]
     (testing "=f"
       (is (= (=f a b) true))
       (is (= (=f a c) false)))
@@ -57,7 +59,10 @@
       (is (= (-f c f) (->FieldElement 16 31))))
     (testing "*f"
       (is (= (*f g h) (->FieldElement 22 31))))
+    (testing "**f"
+      (is (= (**f d 3)         (->FieldElement 15 31)))
+      (is (= (*f m (**f l 5)))) (->FieldElement 16 31))
     (testing "divf"
-      (is (= (divf i g) (->FieldElement 4 31)))
-      (is (= (**f d -3) (->FieldElement 29 31)))
+      (is (= (divf i g)         (->FieldElement 4 31)))
+      (is (= (**f d -3)         (->FieldElement 29 31)))
       (is (= (*f k (**f j -4))) (->FieldElement 13 31)))))
