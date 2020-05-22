@@ -133,12 +133,12 @@
 
 (extend-type Point
   PointOps
-  (+p [{x1 :x y1 :y a1 :a b1 :b}
-       {x2 :x y2 :y a2 :a b2 :b}]
+  (+p [{x1 :x y1 :y a1 :a b1 :b, :as p1}
+       {x2 :x y2 :y a2 :a b2 :b, :as p2}]
     (assert (and (= a1 a2) (= b1 b2)) "Points aren't on the same curve")
     (cond
-      (= x1 ##Inf) (make-pt x2 y2 a2 b2)
-      (= x2 ##Inf) (make-pt x1 y1 a1 b1)
+      (= x1 ##Inf) p2
+      (= x2 ##Inf) p1
       (and (= x1 x2) (not= y1 y2)) (make-pt ##Inf ##Inf a1 b2)
       (not= x1 x2) (let [s (slope x1 x2 y1 y2)
                          x3 (- (int (** s 2)) x1 x2)
