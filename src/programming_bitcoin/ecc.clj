@@ -8,12 +8,14 @@
   [b e]
   (reduce * (repeat (bigint e) (bigint b))))
 
+
 (defn mod**
   "Runs modulo on every round of self-multiplication"
   [b e m]
   (cond (= e 0) 1
         (even? e) (rem (** (mod** b (/ e 2) m) 2) m)
         :else (rem (* b (mod** b (dec e) m)) m)))
+
 
 (defn rand-bigint
   "Returns a random integer with bitlength n."
@@ -22,6 +24,7 @@
        (new BigInteger n)
        bigint))
 
+
 (defn uniform-number
   "Return a random number that is between 1 and n-1"
   [n]
@@ -29,6 +32,7 @@
                      (- n 2)
                      str
                      count))))
+
 
 (defn prime?
   "Fermat based primality test"
@@ -45,7 +49,9 @@
                     false
                     (recur (dec k)))))))))
 
+
 (defrecord FieldElement [e p])
+
 
 (defprotocol FieldOps
   (=f    [x y])
@@ -55,16 +61,19 @@
   (divf  [x y])
   (**f   [x k]))
 
+
 (defn make-fe
   "Constructor function for Field Element with validations"
   [e p]
   (assert (and (<= 0 e) (< e p) (prime? p)) "Invalid Field Element")
   (FieldElement. e p))
 
+
 (defn assert=
   "Field equality assertion"
   [p p2]
   (assert (= p p2) "Fields need to be of the same prime order"))
+
 
 (extend-type FieldElement
   FieldOps
@@ -89,13 +98,16 @@
 
 (defrecord Point [x y a b])
 
+
 (defprotocol PointOps
   (+p [x y]))
+
 
 (defn on-curve?
   "Checks if point is on elliptic curve"
   [x y a b]
   (= (int (** y 2)) (int (+ (** x 3) (* a x) b))))
+
 
 (defn make-pt
   "Constructor function for elliptic curve points with validations"
@@ -106,20 +118,24 @@
       (assert (on-curve? x y a b))
       (Point. x y a b))))
 
+
 (defn slope
   "Calculates slope of a line"
   [x1 x2 y1 y2]
   (int (/ (- y2 y1) (- x2 x1))))
+
 
 (defn tangent-slope
   "Calculates the slope of a tangent line to the elliptic curve"
   [x y a]
   (int (/ (+ (* 3 (** x 2)) a) (* 2 y))))
 
+
 (extend-type Point
   PointOps
   (+p [{x1 :x y1 :y a1 :a b1 :b}
        {x2 :x y2 :y a2 :a b2 :b}]
+    (assert (and (= a1 a2) (= b1 b2)) "Points aren't on the same curve")
     (cond
       (= x1 ##Inf) (make-pt x2 y2 a2 b2)
       (= x2 ##Inf) (make-pt x1 y1 a1 b1)
