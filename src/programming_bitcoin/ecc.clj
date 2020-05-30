@@ -144,7 +144,7 @@
                          x3 (- (int (** s 2)) x1 x2)
                          y3 (-  (* s (- x1 x3)) y1)]
                      (make-pt x3 y3 a1 b1))
-      (and (= x1 x2) (= y1 y2)) (let [s (tangent-slope x1 y1 a1)
-                                      x3 (- (int (** s 2)) x1 x2)
-                                      y3 (- (* s (- x1 x3)) y1)]
-                                  (make-pt x3 y3 a1 b1)))))
+      (= p1 p2) (let [s (tangent-slope x1 y1 a1)
+                      x3 (- (int (** s 2)) x1 x2)
+                      y3 (- (* s (- x1 x3)) y1)]
+                  (make-pt x3 y3 a1 b1)))))
