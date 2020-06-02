@@ -1,4 +1,5 @@
 (ns programming-bitcoin.ecc-test
+  (:refer-clojure :exclude [+ - * /])
   (:require
    [clojure.test :refer :all]
    [programming-bitcoin.ecc :refer :all]))
@@ -44,24 +45,23 @@
           k (->FieldElement 11 p)
           l (->FieldElement 5 p)
           m (->FieldElement 18 p)]
-      (testing "=f"
-        (is (= (=f a b) true))
-        (is (= (=f a c) false)))
-      (testing "+f"
-        (is (= (+f a c) (->FieldElement 17 31)))
-        (is (= (+f d e) (->FieldElement 7 31))))
-      (testing "-f"
-        (is (= (-f c b) (->FieldElement 13 31)))
-        (is (= (-f c f) (->FieldElement 16 31))))
-      (testing "*f"
-        (is (= (*f g h) (->FieldElement 22 31))))
-      (testing "exptf"
-        (is (= (exptf d 3)          (->FieldElement 15 31)))
-        (is (= (*f m (exptf l 5)))) (->FieldElement 16 31))
-      (testing "divf"
-        (is (= (divf i g)           (->FieldElement 4 31)))
-        (is (= (exptf d -3)         (->FieldElement 29 31)))
-        (is (= (*f k (exptf j -4))) (->FieldElement 13 31))))))
+      (testing "="
+        (is (= (= a b) true))
+        (is (= (= a c) false)))
+      (testing "+"
+        (is (= (+ a c) (->FieldElement 17 31)))
+        (is (= (+ d e) (->FieldElement 7 31))))
+      (testing "-"
+        (is (= (- c b) (->FieldElement 13 31)))
+        (is (= (- c f) (->FieldElement 16 31))))
+      (testing "*"
+        (is (= (* g h) (->FieldElement 22 31))))
+      (testing "expt"
+        (is (= (expt d 3)         (->FieldElement 15 31)))
+        (is (= (* m (expt l 5)))) (->FieldElement 16 31))
+      (testing "/"
+        (is (= (/ i g)            (->FieldElement 4 31)))
+        (is (= (expt d -3)        (->FieldElement 29 31)))))))
 
 (deftest curve-points
   (testing "make-pt"
@@ -76,11 +76,11 @@
           e (->Point -1 -1 5 7)
           f (->Point 18 77 5 7)]
       (testing "point at infinity + point"
-        (is (= (+p a b) b))
-        (is (= (+p b c) a))
+        (is (= (+ a b) b))
+        (is (= (+ b c) a))
         (testing "commutativity"
-          (is (= (+p b a) b))))
+          (is (= (+ b a) b))))
       (testing "different points"
-        (is (= (+p d e) c)))
+        (is (= (+ d e) c)))
       (testing "same point"
-        (is (= (+p e e) f))))))
+        (is (= (+ e e) f))))))

@@ -1,16 +1,37 @@
 (ns programming-bitcoin.ecc
+  (:refer-clojure :exclude [+ - * /])
   (:require [clojure.math.numeric-tower :as nt])
   (:import (java.math BigInteger)
            (java.util Random)))
+
+
+(defrecord FieldElement [e p])
+
+(defrecord Point [x y a b])
+
+(defprotocol FieldOps
+  (+    [x y])
+  (-    [x y])
+  (*    [x y])
+  (/  [x y])
+  (expt [x k]))
+
+
+(extend-type Number
+  FieldOps
+  (+ [x y] (+' x y))
+  (- [x y] (-' x y))
+  (* [x y] (*' x y))
+  (/ [x y] (clojure.core// x y))
+  (expt [x k] (nt/expt x k)))
 
 
 (defn mod-expt
   "Runs modulo on every round of self-multiplication"
   [b e m]
   (cond (= e 0) 1
-        (even? e) (rem (nt/expt (mod-expt b (/ e 2) m) 2) m)
+        (even? e) (rem (expt (mod-expt b (/ e 2) m) 2) m)
         :else (rem (* b (mod-expt b (dec e) m)) m)))
-
 
 (defn rand-bigint
   "Returns a random integer with bitlength n."
@@ -45,17 +66,6 @@
                     (recur (dec k)))))))))
 
 
-(defrecord FieldElement [e p])
-
-
-(defprotocol FieldOps
-  (=f    [x y])
-  (+f    [x y])
-  (-f    [x y])
-  (*f    [x y])
-  (divf  [x y])
-  (exptf   [x k]))
-
 
 (defn make-fe
   "Constructor function for Field Element with validations"
@@ -66,42 +76,31 @@
 
 (defn assert=
   "Field equality assertion"
-  [p p2]
-  (assert (= p p2) "Fields need to be of the same prime order"))
-
+  [p1 p2]
+  (assert (= p1 p2) "Fields need to be of the same prime order"))
 
 (extend-type FieldElement
   FieldOps
-  (=f [{e :e p :p} {e2 :e p2 :p}]
-    (and (= e e2) (= p p2)))
-  (+f [{e :e p :p} {e2 :e p2 :p}]
+  (+ [{e :e p :p} {e2 :e p2 :p}]
     (assert= p p2)
-    (make-fe (mod (+ e e2) p) p))
-  (-f [{e :e p :p} {e2 :e p2 :p}]
+    (make-fe (mod (+' e e2) p) p))
+  (- [{e :e p :p} {e2 :e p2 :p}]
     (assert= p p2)
-    (make-fe (mod (- e e2) p) p))
-  (*f [{e :e p :p} {e2 :e p2 :p}]
+    (make-fe (mod (-' e e2) p) p))
+  (* [{e :e p :p} {e2 :e p2 :p}]
     (assert= p p2)
-    (make-fe (mod (* e e2) p) p))
-  (divf [{e :e p :p} {e2 :e p2 :p}]
+    (make-fe (mod (*' e e2) p) p))
+  (/ [{e :e p :p} {e2 :e p2 :p}]
     (assert= p p2)
-    (make-fe (int (mod (* e (mod-expt e2 (- p 2) p)) p)) p))
-  (exptf [{e :e p :p} k]
+    (make-fe (int (mod (*' e (mod-expt e2 (-' p 2) p)) p)) p))
+  (expt [{e :e p :p} k]
     (let [k (mod k (dec p))]
       (make-fe (mod-expt e k p) p))))
-
-
-(defrecord Point [x y a b])
-
-
-(defprotocol PointOps
-  (+p [x y]))
-
 
 (defn on-curve?
   "Checks if point is on elliptic curve"
   [x y a b]
-  (= (int (nt/expt y 2)) (int (+ (nt/expt x 3) (* a x) b))))
+  (= (expt y 2) (+ (+ (expt x 3) (* a x)) b)))
 
 
 (defn make-pt
@@ -127,19 +126,19 @@
 
 
 (extend-type Point
-  PointOps
-  (+p [{x1 :x y1 :y a1 :a b1 :b, :as p1}
-       {x2 :x y2 :y a2 :a b2 :b, :as p2}]
+  FieldOps
+  (+ [{x1 :x y1 :y a1 :a b1 :b, :as p1}
+      {x2 :x y2 :y a2 :a b2 :b, :as p2}]
     (assert (and (= a1 a2) (= b1 b2)) "Points aren't on the same curve")
     (cond
       (= x1 ##Inf) p2
       (= x2 ##Inf) p1
       (and (= x1 x2) (not= y1 y2)) (make-pt ##Inf ##Inf a1 b2)
       (not= x1 x2) (let [s (slope x1 x2 y1 y2)
-                         x3 (- (int (nt/expt s 2)) x1 x2)
+                         x3 (- (- (expt s 2) x1) x2)
                          y3 (-  (* s (- x1 x3)) y1)]
                      (make-pt x3 y3 a1 b1))
       (= p1 p2) (let [s (tangent-slope x1 y1 a1)
-                      x3 (- (int (nt/expt s 2)) x1 x2)
+                      x3 (- (- (expt s 2) x1) x2)
                       y3 (- (* s (- x1 x3)) y1)]
                   (make-pt x3 y3 a1 b1)))))
