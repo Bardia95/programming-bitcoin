@@ -1,20 +1,15 @@
 (ns programming-bitcoin.ecc
+  (:require [clojure.math.numeric-tower :as nt])
   (:import (java.math BigInteger)
            (java.util Random)))
 
 
-(defn **
-  "Big integer exponentiation"
-  [b e]
-  (reduce * (repeat (bigint e) (bigint b))))
-
-
-(defn mod**
+(defn mod-expt
   "Runs modulo on every round of self-multiplication"
   [b e m]
   (cond (= e 0) 1
-        (even? e) (rem (** (mod** b (/ e 2) m) 2) m)
-        :else (rem (* b (mod** b (dec e) m)) m)))
+        (even? e) (rem (nt/expt (mod-expt b (/ e 2) m) 2) m)
+        :else (rem (* b (mod-expt b (dec e) m)) m)))
 
 
 (defn rand-bigint
@@ -44,7 +39,7 @@
             (loop [k 50]
               (if (= k 0)
                 true
-                (let [res (mod** (uniform-number n) pow n)]
+                (let [res (mod-expt (uniform-number n) pow n)]
                   (if-not (= res 1)
                     false
                     (recur (dec k)))))))))
@@ -59,7 +54,7 @@
   (-f    [x y])
   (*f    [x y])
   (divf  [x y])
-  (**f   [x k]))
+  (exptf   [x k]))
 
 
 (defn make-fe
@@ -90,10 +85,10 @@
     (make-fe (mod (* e e2) p) p))
   (divf [{e :e p :p} {e2 :e p2 :p}]
     (assert= p p2)
-    (make-fe (int (mod (* e (mod** e2 (- p 2) p)) p)) p))
-  (**f [{e :e p :p} k]
+    (make-fe (int (mod (* e (mod-expt e2 (- p 2) p)) p)) p))
+  (exptf [{e :e p :p} k]
     (let [k (mod k (dec p))]
-      (make-fe (mod** e k p) p))))
+      (make-fe (mod-expt e k p) p))))
 
 
 (defrecord Point [x y a b])
@@ -106,7 +101,7 @@
 (defn on-curve?
   "Checks if point is on elliptic curve"
   [x y a b]
-  (= (int (** y 2)) (int (+ (** x 3) (* a x) b))))
+  (= (int (nt/expt y 2)) (int (+ (nt/expt x 3) (* a x) b))))
 
 
 (defn make-pt
@@ -128,7 +123,7 @@
 (defn tangent-slope
   "Calculates the slope of a tangent line to the elliptic curve"
   [x y a]
-  (int (/ (+ (* 3 (** x 2)) a) (* 2 y))))
+  (int (/ (+ (* 3 (nt/expt x 2)) a) (* 2 y))))
 
 
 (extend-type Point
@@ -141,10 +136,10 @@
       (= x2 ##Inf) p1
       (and (= x1 x2) (not= y1 y2)) (make-pt ##Inf ##Inf a1 b2)
       (not= x1 x2) (let [s (slope x1 x2 y1 y2)
-                         x3 (- (int (** s 2)) x1 x2)
+                         x3 (- (int (nt/expt s 2)) x1 x2)
                          y3 (-  (* s (- x1 x3)) y1)]
                      (make-pt x3 y3 a1 b1))
       (= p1 p2) (let [s (tangent-slope x1 y1 a1)
-                      x3 (- (int (** s 2)) x1 x2)
+                      x3 (- (int (nt/expt s 2)) x1 x2)
                       y3 (- (* s (- x1 x3)) y1)]
                   (make-pt x3 y3 a1 b1)))))

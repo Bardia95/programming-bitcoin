@@ -5,20 +5,11 @@
 
 
 (deftest exponentiation
-  (testing "mod**"
+  (testing "mod-expt"
     (testing "small positive integers"
-      (is (= (mod** 2 5 7)  (.modPow (biginteger 2) (biginteger 5) (biginteger 7)))))
+      (is (= (mod-expt 2 5 7)  (.modPow (biginteger 2) (biginteger 5) (biginteger 7)))))
     (testing "large exponent and base"
-      (is (= (mod** 2000 1000 7) (.modPow (biginteger 2000) (biginteger 1000) (biginteger 7))))))
-  (testing "**"
-    (testing "8**3"
-      (is (= (** 8 3) (* 8 8 8))))
-    (testing "1**99"
-      (is (= (** 1 99) 1)))
-    (testing "0**99"
-      (is (= (** 0 99) 0)))
-    (testing "99**1"
-      (is (= (** 99 1) 99)))))
+      (is (= (mod-expt 2000 1000 7) (.modPow (biginteger 2000) (biginteger 1000) (biginteger 7)))))))
 
 (deftest primality
   (testing "prime?"
@@ -64,13 +55,13 @@
         (is (= (-f c f) (->FieldElement 16 31))))
       (testing "*f"
         (is (= (*f g h) (->FieldElement 22 31))))
-      (testing "**f"
-        (is (= (**f d 3)          (->FieldElement 15 31)))
-        (is (= (*f m (**f l 5)))) (->FieldElement 16 31))
+      (testing "exptf"
+        (is (= (exptf d 3)          (->FieldElement 15 31)))
+        (is (= (*f m (exptf l 5)))) (->FieldElement 16 31))
       (testing "divf"
-        (is (= (divf i g)         (->FieldElement 4 31)))
-        (is (= (**f d -3)         (->FieldElement 29 31)))
-        (is (= (*f k (**f j -4))) (->FieldElement 13 31))))))
+        (is (= (divf i g)           (->FieldElement 4 31)))
+        (is (= (exptf d -3)         (->FieldElement 29 31)))
+        (is (= (*f k (exptf j -4))) (->FieldElement 13 31))))))
 
 (deftest curve-points
   (testing "make-pt"
