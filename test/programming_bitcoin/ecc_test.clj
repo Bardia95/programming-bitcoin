@@ -62,21 +62,21 @@
         (is (= (pwr d 3)         (->FieldElement 15 31)))
         (is (= (* m (pwr l 5)))) (->FieldElement 16 31))
       (testing "/"
-        (is (= (/ i g)            (->FieldElement 4 31)))
-        (is (= (pwr d -3)        (->FieldElement 29 31)))))))
+        (is (= (/ i g)    (->FieldElement 4 31)))
+        (is (= (pwr d -3) (->FieldElement 29 31)))))))
 
 (deftest curve-points
   (testing "->Point"
-    (is (= (->Point -1 -1 5 7)       (map->Point {:x -1 :y -1 :a 5 :b 7})))
-    (is (= (->Point 18 77 5 7)       (map->Point {:x 18 :y 77 :a 5 :b 7})))
-    (is (= (->Point ##Inf ##Inf 5 7) (map->Point {:x ##Inf :y ##Inf :a 5 :b 7}))))
+    (is (= (->Point  -1 -1  5 7) (map->Point {:x -1  :y -1  :a 5 :b 7})))
+    (is (= (->Point  18 77  5 7) (map->Point {:x 18  :y 77  :a 5 :b 7})))
+    (is (= (->Point nil nil 5 7) (map->Point {:x nil :y nil :a 5 :b 7}))))
   (testing "point addition over reals"
-    (let [a (->Point ##Inf ##Inf 5 7)
-          b (->Point  2  5 5 7)
-          c (->Point  2 -5 5 7)
-          d (->Point  3  7 5 7)
-          e (->Point -1 -1 5 7)
-          f (->Point 18 77 5 7)]
+    (let [a (->Point nil nil 5 7)
+          b (->Point   2   5 5 7)
+          c (->Point   2  -5 5 7)
+          d (->Point   3   7 5 7)
+          e (->Point  -1  -1 5 7)
+          f (->Point  18  77 5 7)]
       (testing "point at infinity + point"
         (is (= (+ a b) b))
         (is (= (+ b c) a))
@@ -101,13 +101,13 @@
         y5 (->FieldElement 111 prime)
         x6 (->FieldElement  15 prime)
         y6 (->FieldElement  86 prime)
-        inf (->Point ##Inf ##Inf a b)
-        p1  (->Point    x1   y1  a b)
-        p2  (->Point    x2   y2  a b)
-        p3  (->Point    x3   y3  a b)
-        p4  (->Point    x4   y4  a b)
-        p5  (->Point    x5   y5  a b)
-        p6  (->Point    x6   y6  a b)]
+        inf (->Point nil nil  a b)
+        p1  (->Point  x1  y1  a b)
+        p2  (->Point  x2  y2  a b)
+        p3  (->Point  x3  y3  a b)
+        p4  (->Point  x4  y4  a b)
+        p5  (->Point  x5  y5  a b)
+        p6  (->Point  x6  y6  a b)]
     (testing "point addition over finite fields"
       (testing "different points"
         (is (= (+ p1 p2) p3)))
@@ -120,3 +120,16 @@
         (is (= (* 1 p4) p4)))
       (testing "multiplying until point at infinity"
         (is (= (* 7 p6) inf))))))
+
+
+(deftest S256-points
+  (testing "initializing S256 point"
+    (testing "at point at infinity"
+      (is (= (->S256Point nil nil) (->Point nil nil A B))))
+    (testing "normal point"
+      (is (= (->S256Point 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798
+                          0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8)
+             (->Point (->FieldElement 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798 P)
+                      (->FieldElement 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8 P)
+                      A
+                      B))))))
