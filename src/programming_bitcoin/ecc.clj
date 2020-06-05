@@ -224,18 +224,39 @@
       (recur))))
 ;; => #'programming-bitcoin.ecc/rand-k
 
+
+(defn hmac [key message]
+  (-> (mac/hash message {:key key :alg :hmac+sha256})
+      (codecs/bytes->hex)))
+;; => #'programming-bitcoin.ecc/hmac
+
 (defn deterministic-k [secret z]
   (let [k (byte-array 32 (byte 0))
         v (byte-array 32 (byte 1))
         z (if (> z N) (- z N) z)
-        z-bytes ()]))
+        z-bytes (num->bytes 32 z)
+        secret-bytes (num->bytes 32 secret)
+        k (hmac k (byte-array (concat v [0] secret-bytes z-bytes)))
+        v (hmac k v)
+        k (hmac k (byte-array (concat v [1] secret-bytes z-bytes)))
+        v (hmac k v)]
+    (loop [k k
+           v v]
+      (let [v (hmac k v)
+            candidate (bytes->num v)]
+        (if (and (<= 1 candidate) (< candidate N))
+          candidate
+          (recur (hmac k (byte-array (concat v [0])))
+                 (hmac k v)))))))
+;; => #'programming-bitcoin.ecc/deterministic-k
 
 (defn sign [{:keys [secret point]} z]
-  (let [k (rand-k)
+  (let [k (deterministic-k secret z)
         r ((:num (:x (* k G))))
         k_inv (mod-expt k (- N 2) N)
         s (mod (* k_inv (+ z (* secret r))) N)]
     (if (> s (/ N 2))
       (let [s (- N s)]
         (->Signature r s)))))
+;; => #'programming-bitcoin.ecc/sign
 ;; => #'programming-bitcoin.ecc/sign
