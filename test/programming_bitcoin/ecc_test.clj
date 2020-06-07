@@ -133,3 +133,11 @@
                       (->FieldElement 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8 P)
                       A
                       B))))))
+
+(deftest signature-verification
+  (testing "verifying private key signature"
+    (let [pk (->PrivateKey (rand-256))
+          z (rand-k)
+          sig (sign pk z)
+          p (:point pk)]
+      (is (true? (verify-sig p z sig))))))
