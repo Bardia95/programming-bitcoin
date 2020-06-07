@@ -3,11 +3,11 @@
   (:require [clojure.math.numeric-tower :as math]
             [buddy.core.nonce :as nonce]
             [buddy.core.mac :as mac]
-            [buddy.core.codecs :as codecs])
+            [buddy.core.codecs :as codecs]
+            [buddy.core.hash :refer [sha256]])
   (:import (java.math BigInteger)
            (java.util Random)))
 
-;; Order of finite cyclic group of generator point G
 (def N 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141)
 
 
@@ -25,7 +25,6 @@
   (zero  [x]))
 
 (defn scalar-multiply [c p]
-  ;; If coefficient is zero, return point at infinity
   (if (zero? c) (zero p)
       (loop [c c
              z (zero p)
@@ -33,11 +32,8 @@
         (let [t (even? c)
               c (quot c 2)]
           (cond
-            ;; if the coef is even, recur with the coef / 2, zero, and the point added to itself
             t (recur c z (+ p p))
-            ;; if the coef is zero, return the point + the current zero value
             (zero? c) (+ p z)
-            ;; if the coef is odd, recur with the coef /2, zero plus the point, and the point added to itself
             :else (recur c (+ p z) (+ p p)))))))
 
 (declare S256Point?)
@@ -166,42 +162,24 @@
   (and (= a A) (= b B)))
 
 (* N G)
-;; => #programming_bitcoin.ecc.Point{:x nil, :y nil, :a #programming_bitcoin.ecc.FieldElement{:num 0, :prime 115792089237316195423570985008687907853269984665640564039457584007908834671663N}, :b #programming_bitcoin.ecc.FieldElement{:num 7, :prime 115792089237316195423570985008687907853269984665640564039457584007908834671663N}}
-
 
 (defrecord Signature [r s])
-
-(defn verify-sig [p z {:keys [r s]}]
-  (let [s_inv (mod-expt s (- N 2) N)
-        u (mod (* z s_inv) N)
-        v (mod (* r s_inv) N)
-        total (+ (* u G) (* v p))]
-    (= r (:num (:x total)))))
-;; => #'programming-bitcoin.ecc/verify-sig
 
 
 (defrecord PrivateKey [secret point])
 
+
 (defn ->PrivateKey [s]
   (PrivateKey. s (* s G)))
 
-(defn num->bytes
-  ([length n]
-   (num->bytes [length n "big"]))
-  ([length n end]
-   (let [a  (.toByteArray (biginteger n))
-         l  (count a)
-         zs (repeat ('- length l) (byte 0))
-         le (comp byte-array reverse)
-         be byte-array
-         >l (drop (-' l length) (seq a))
-         <l (concat zs a)]
-     (cond
-       (and (> l length) (= end "big")) (be >l)
-       (and (< l length) (= end "big")) (be <l)
-       (and (> l length) (= end "little")) (le >l)
-       (and (< l length) (= end "little")) (le <l)))))
-;; => #'programming-bitcoin.ecc/num->bytes
+
+(defn num->bytes [length n]
+  (let [a (.toByteArray (biginteger n))
+        l (count a)
+        zeros (repeat (- length l) (byte 0))]
+    (if (> l length)
+      (byte-array (drop (- l length) (seq a)))
+      (byte-array (concat zeros a)))))
 
 
 (defn bytes->num
@@ -215,20 +193,22 @@
           (into [0])
           byte-array
           BigInteger.))))
-;; => #'programming-bitcoin.ecc/bytes->num
+
+
+(defn rand-256 []
+  (bytes->num (nonce/random-bytes 32)))
+
 
 (defn rand-k []
   (let [x (bytes->num (nonce/random-bytes 32))]
     (if (< x N)
       x
       (recur))))
-;; => #'programming-bitcoin.ecc/rand-k
 
 
 (defn hmac [key message]
-  (-> (mac/hash message {:key key :alg :hmac+sha256})
-      (codecs/bytes->hex)))
-;; => #'programming-bitcoin.ecc/hmac
+  (-> (mac/hash message {:key key :alg :hmac+sha256})))
+
 
 (defn deterministic-k [secret z]
   (let [k (byte-array 32 (byte 0))
@@ -248,15 +228,22 @@
           candidate
           (recur (hmac k (byte-array (concat v [0])))
                  (hmac k v)))))))
-;; => #'programming-bitcoin.ecc/deterministic-k
+
 
 (defn sign [{:keys [secret point]} z]
   (let [k (deterministic-k secret z)
-        r ((:num (:x (* k G))))
+        r (:num (:x (* k G)))
         k_inv (mod-expt k (- N 2) N)
         s (mod (* k_inv (+ z (* secret r))) N)]
     (if (> s (/ N 2))
       (let [s (- N s)]
-        (->Signature r s)))))
-;; => #'programming-bitcoin.ecc/sign
-;; => #'programming-bitcoin.ecc/sign
+        (->Signature r s))
+      (->Signature r s))))
+
+
+(defn verify-sig [p z {:keys [r s]}]
+  (let [s_inv (mod-expt s (- N 2) N)
+        u (mod (* z s_inv) N)
+        v (mod (* r s_inv) N)
+        total (+ (* u G) (* v p))]
+    (= r (:num (:x total)))))
