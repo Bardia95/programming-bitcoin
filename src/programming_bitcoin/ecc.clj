@@ -8,6 +8,7 @@
   (:import (java.math BigInteger)
            (java.util Random)))
 
+
 (def N 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141)
 
 
@@ -24,6 +25,7 @@
   (pwr [x y])
   (zero  [x]))
 
+
 (defn scalar-multiply [c p]
   (if (zero? c) (zero p)
       (loop [c c
@@ -36,7 +38,9 @@
             (zero? c) (+ p z)
             :else (recur c (+ p z) (+ p p)))))))
 
+
 (declare S256Point?)
+
 
 (extend-type Number
   FieldOps
@@ -67,6 +71,7 @@
                      str
                      count))))
 
+
 (defn prime?
   "Fermat based primality test"
   [n]
@@ -81,6 +86,7 @@
                   (if-not (= res 1)
                     false
                     (recur (dec k)))))))))
+
 
 (defrecord FieldElement [num prime]
   FieldOps
@@ -146,22 +152,32 @@
   (assert (valid-point? x y a b) "Point not on curve")
   (Point. x y a b))
 
+
 (def P (- (- (pwr 2 256) (pwr 2 32)) 977))
+
+
 (def A (->FieldElement 0 P))
+
+
 (def B (->FieldElement 7 P))
+
 
 (defn ->S256Point [x y]
   (let [x (if (number? x) (->FieldElement x P) x)
         y (if (number? y) (->FieldElement y P) y)]
     (->Point x y A B)))
 
+
 (def G (->S256Point 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798
                     0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8))
+
 
 (defn S256Point? [{:keys [a b]}]
   (and (= a A) (= b B)))
 
+
 (* N G)
+
 
 (defrecord Signature [r s])
 
