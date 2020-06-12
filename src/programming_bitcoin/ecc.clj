@@ -26,17 +26,17 @@
   (zero  [x]))
 
 
-(defn scalar-multiply [c p]
-  (if (zero? c) (zero p)
-      (loop [c c
-             z (zero p)
-             p p]
-        (let [t (even? c)
-              c (quot c 2)]
+(defn scalar-multiply [coeff point]
+  (if (zero? coeff) (zero point)
+      (loop [coeff coeff
+             ident (zero point)
+             point point]
+        (let [even (even? coeff)
+              coeff (quot coeff 2)]
           (cond
-            t (recur c z (+ p p))
-            (zero? c) (+ p z)
-            :else (recur c (+ p z) (+ p p)))))))
+            even (recur coeff ident (+ point point))
+            (zero? coeff) (+ point ident)
+            :else (recur coeff (+ point ident) (+ point point)))))))
 
 
 (declare S256Point?)
@@ -58,18 +58,19 @@
 (defn rand-bigint
   "Returns a random integer with bitlength n."
   [n]
-  (->> (new Random)
-       (new BigInteger n)
-       bigint))
+  (->> (Random.)
+       (BigInteger. n)
+       biginteger))
+;; => #'programming-bitcoin.ecc/rand-bigint
+
 
 
 (defn uniform-number
   "Return a random number that is between 1 and n-1"
   [n]
-  (+ 1 (rand-bigint (->
-                     (- n 2)
-                     str
-                     count))))
+  (+ 1 (rand-bigint (-> (- n 2)
+                        str
+                        count))))
 
 
 (defn prime?
