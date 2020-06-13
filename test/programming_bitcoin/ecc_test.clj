@@ -134,6 +134,11 @@
                       A
                       B))))))
 
+(deftest random-number-generation
+  (testing "range"
+    (is (every? #(and (> % 0) (< % (pwr 2 256))) (repeat 1000 (rand-256))))))
+
+
 (deftest signature-verification
   (testing "verifying private key signature"
     (let [pk (->PrivateKey (rand-256))
