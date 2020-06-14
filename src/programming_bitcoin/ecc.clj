@@ -112,13 +112,13 @@
 
 
 (defn slope
-  "Calculates slope of a line"
+  {:doc "Calculates slope of a line"}
   [x1 x2 y1 y2]
   (/ (- y2 y1) (- x2 x1)))
 
 
 (defn tangent-slope
-  "Calculates the slope of a tangent line to the elliptic curve"
+  {:doc "Calculates the slope of a tangent line to the elliptic curve"}
   [x y a]
   (/ (+ (* 3 (pwr x 2)) a) (* 2 y)))
 
@@ -201,16 +201,11 @@
 
 
 (defn bytes->num
-  ([bs]
-   (bytes->num bs "big"))
-  ([bs end]
-   (let [bs (cond
-              (= end "little") (reverse bs)
-              (= end "big") bs)]
-     (->> bs
-          (into [0])
-          byte-array
-          BigInteger.))))
+  [bs]
+  (->> bs
+       (into [0])
+       byte-array
+       BigInteger.))
 
 
 (defn rand-256 []
