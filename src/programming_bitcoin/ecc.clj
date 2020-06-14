@@ -13,6 +13,8 @@
 
 
 (defn mod-expt
+  {:doc {"Given a base, exponent, and modulo,
+          returns b ^ e mod m"}}
   [b e m]
   (.modPow (biginteger b) (biginteger e) (biginteger m)))
 
@@ -26,7 +28,8 @@
   (zero  [x]))
 
 
-(defn scalar-multiply [coeff point]
+(defn scalar-multiply
+  [coeff point]
   (if (zero? coeff) (zero point)
       (loop [coeff coeff
              ident (zero point)
