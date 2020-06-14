@@ -59,17 +59,15 @@
 
 
 (defn rand-bigint
-  "Returns a random integer with bitlength n."
+  {:doc "Returns a random integer with bitlength n."}
   [n]
   (->> (Random.)
        (BigInteger. n)
        biginteger))
-;; => #'programming-bitcoin.ecc/rand-bigint
-
 
 
 (defn uniform-number
-  "Return a random number that is between 1 and n-1"
+  {:doc "Return a random number that is between 1 and n-1"}
   [n]
   (+ 1 (rand-bigint (-> (- n 2)
                         str
@@ -77,7 +75,7 @@
 
 
 (defn prime?
-  "Fermat based primality test"
+  {:doc "Fermat based primality test"}
   [n]
   (cond
     (= n 1) false
