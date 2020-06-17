@@ -35,10 +35,11 @@
              p2 (zero p1)]
         (let [e (even? s)
               s (quot s 2)]
-          (cond
-            e (recur s (+ p1 p1) p2)
-            (zero? s) (+ p1 p2)
-            :else (recur s (+ p1 p1) (+ p1 p2)))))))
+          (if (zero? s)
+            (+ p1 p2)
+            (if e
+              (recur s (+ p1 p1) p2)
+              (recur s (+ p1 p1) (+ p1 p2))))))))
 
 
 (declare S256Point?)
