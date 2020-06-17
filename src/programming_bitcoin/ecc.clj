@@ -13,8 +13,8 @@
 
 
 (defn mod-expt
-  {:doc {"Given a base, exponent, and modulo,
-          returns b ^ e mod m"}}
+  {:doc "Given a base, exponent, and modulo,
+          returns b ^ e mod m"}
   [b e m]
   (.modPow (biginteger b) (biginteger e) (biginteger m)))
 
@@ -28,18 +28,17 @@
   (zero  [x]))
 
 
-(defn scalar-multiply
-  [coeff point]
-  (if (zero? coeff) (zero point)
-      (loop [coeff coeff
-             ident (zero point)
-             point point]
-        (let [even (even? coeff)
-              coeff (quot coeff 2)]
+(defn scalar-multiply [s p]
+  (if (zero? s) (zero p)
+      (loop [s s
+             p1 p
+             p2 (zero p1)]
+        (let [e (even? s)
+              s (quot s 2)]
           (cond
-            even (recur coeff ident (+ point point))
-            (zero? coeff) (+ point ident)
-            :else (recur coeff (+ point ident) (+ point point)))))))
+            e (recur s (+ p1 p1) p2)
+            (zero? s) (+ p1 p2)
+            :else (recur s (+ p1 p1) (+ p1 p2)))))))
 
 
 (declare S256Point?)
