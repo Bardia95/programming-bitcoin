@@ -121,6 +121,15 @@
       (testing "multiplying until point at infinity"
         (is (= (* 7 p6) inf))))))
 
+(deftest points-on-curve
+  (let [prime 223
+        a (->FieldElement 0 prime)
+        b (->FieldElement 7 prime)
+        valid-a [192 105]
+        valid-b [17 56]
+        valid-c [1 193]
+        invalid-a [200 119]
+        invalid-b [42 99]]))
 
 (deftest S256-points
   (testing "initializing S256 point"
