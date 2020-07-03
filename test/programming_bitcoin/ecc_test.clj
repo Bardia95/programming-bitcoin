@@ -151,7 +151,7 @@
 (deftest signature-verification
   (testing "verifying private key signature"
     (let [pk (->PrivateKey (rand-256))
-          z (rand-k)
+          z (rand-256)
           sig (sign pk z)
           p (:point pk)]
       (is (true? (verify-sig p z sig))))))
