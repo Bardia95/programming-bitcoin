@@ -2,9 +2,7 @@
   (:refer-clojure :exclude [+ - * /])
   (:require [clojure.math.numeric-tower :as math]
             [buddy.core.nonce :as nonce]
-            [buddy.core.mac :as mac]
-            [buddy.core.codecs :as codecs]
-            [buddy.core.hash :refer [sha256]])
+            [buddy.core.mac :as mac])
   (:import (java.math BigInteger)
            (java.util Random)))
 
@@ -46,101 +44,101 @@
 
 
 (extend-type Number
-FieldOps
-(+   [x y] (+' x y))
-(-   [x y] (-' x y))
-(*   [x y] (cond
-             (number? y) (*' x y)
-             (S256Point? y) (scalar-multiply (mod x N) y)
-             :else (scalar-multiply x y)))
-(/   [x y] (clojure.core// x y))
-(pwr [x k] (math/expt x k))
-(zero [x] 0))
+  FieldOps
+  (+   [x y] (+' x y))
+  (-   [x y] (-' x y))
+  (*   [x y] (cond
+               (number? y) (*' x y)
+               (S256Point? y) (scalar-multiply (mod x N) y)
+               :else (scalar-multiply x y)))
+  (/   [x y] (clojure.core// x y))
+  (pwr [x k] (math/expt x k))
+  (zero [x] 0))
 
 
 (defn rand-bigint
-{:doc "Returns a random integer with bitlength n."}
-[n]
-(->> (Random.)
-     (BigInteger. n)
-     biginteger))
+  {:doc "Returns a random integer with bitlength n."}
+  [n]
+  (->> (Random.)
+       (BigInteger. n)
+       biginteger))
 
 
 (defn uniform-number
-{:doc "Return a random number that is between 1 and n-1"}
-[n]
-(+ 1 (rand-bigint (-> (- n 2)
-                      str
-                      count))))
+  {:doc "Return a random number that is between 1 and n-1"}
+  [n]
+  (+ 1 (rand-bigint (-> (- n 2)
+                        str
+                        count))))
 
 
 (defn prime?
-{:doc "Fermat based primality test"}
-[n]
-(cond
-  (= n 1) false
-  (= n 2) true
-  :else (let [pow (dec n)]
-          (loop [k 50]
-            (if (= k 0)
-              true
-              (let [res (mod-expt (uniform-number n) pow n)]
-                (if-not (= res 1)
-                  false
-                  (recur (dec k)))))))))
+  {:doc "Fermat based primality test"}
+  [n]
+  (cond
+    (= n 1) false
+    (= n 2) true
+    :else (let [pow (dec n)]
+            (loop [k 50]
+              (if (= k 0)
+                true
+                (let [res (mod-expt (uniform-number n) pow n)]
+                  (if-not (= res 1)
+                    false
+                    (recur (dec k)))))))))
 
 
 (defrecord FieldElement [num prime]
-FieldOps
-(+ [x {n2 :num p2 :prime}]
-   (assert (= prime p2))
-   (FieldElement. (mod (+' num n2) prime) prime))
-(- [x {n2 :num p2 :prime}]
-   (assert (= prime p2))
-   (FieldElement. (mod (-' num n2) prime) prime))
-(* [x {n2 :num p2 :prime}]
-   (assert (= prime p2))
-   (FieldElement. (mod (*' num n2) prime) prime))
-(/ [x {n2 :num p2 :prime}]
-   (assert (= prime p2))
-   (FieldElement. (mod (*' num (mod-expt n2 (-' prime 2) prime)) prime) prime))
-(pwr [x k]
-     (let [k (mod k (dec prime))]
-       (FieldElement. (mod-expt num k prime) prime)))
-(zero [x]
-      (FieldElement. 0 prime)))
+  FieldOps
+  (+ [x {n2 :num p2 :prime}]
+    (assert (= prime p2))
+    (FieldElement. (mod (+' num n2) prime) prime))
+  (- [x {n2 :num p2 :prime}]
+    (assert (= prime p2))
+    (FieldElement. (mod (-' num n2) prime) prime))
+  (* [x {n2 :num p2 :prime}]
+    (assert (= prime p2))
+    (FieldElement. (mod (*' num n2) prime) prime))
+  (/ [x {n2 :num p2 :prime}]
+    (assert (= prime p2))
+    (FieldElement. (mod (*' num (mod-expt n2 (-' prime 2) prime)) prime) prime))
+  (pwr [x k]
+    (let [k (mod k (dec prime))]
+      (FieldElement. (mod-expt num k prime) prime)))
+  (zero [x]
+    (FieldElement. 0 prime)))
 
 
 (defn slope
-{:doc "Calculates slope of a line"}
-[x1 x2 y1 y2]
-(/ (- y2 y1) (- x2 x1)))
+  {:doc "Calculates slope of a line"}
+  [x1 x2 y1 y2]
+  (/ (- y2 y1) (- x2 x1)))
 
 
 (defn tangent-slope
-{:doc "Calculates the slope of a tangent line to the elliptic curve"}
-[x y a]
-(/ (+ (* 3 (pwr x 2)) a) (* 2 y)))
+  {:doc "Calculates the slope of a tangent line to the elliptic curve"}
+  [x y a]
+  (/ (+ (* 3 (pwr x 2)) a) (* 2 y)))
 
 
 (defrecord Point [x y a b]
-FieldOps
-(+ [{x1 :x y1 :y a1 :a b1 :b, :as p1}
-    {x2 :x y2 :y a2 :a b2 :b, :as p2}]
-   (assert (and (= a1 a2) (= b1 b2)) "Points aren't on the same curve")
-   (cond
-     (nil? x1) p2
-     (nil? x2) p1
-     (and (= x1 x2) (not= y1 y2)) (->Point nil nil a1 b2)
-     (not= x1 x2) (let [s (slope x1 x2 y1 y2)
-                        x3 (- (- (pwr s 2) x1) x2)
-                        y3 (-  (* s (- x1 x3)) y1)]
-                    (Point. x3 y3 a1 b1))
-     (= p1 p2) (let [s (tangent-slope x1 y1 a1)
-                     x3 (- (- (pwr s 2) x1) x2)
-                     y3 (- (* s (- x1 x3)) y1)]
-                 (Point. x3 y3 a1 b1))))
-(zero [p] (Point. nil nil a b)))
+  FieldOps
+  (+ [{x1 :x y1 :y a1 :a b1 :b, :as p1}
+      {x2 :x y2 :y a2 :a b2 :b, :as p2}]
+    (assert (and (= a1 a2) (= b1 b2)) "Points aren't on the same curve")
+    (cond
+      (nil? x1) p2
+      (nil? x2) p1
+      (and (= x1 x2) (not= y1 y2)) (->Point nil nil a1 b2)
+      (not= x1 x2) (let [s (slope x1 x2 y1 y2)
+                         x3 (- (- (pwr s 2) x1) x2)
+                         y3 (-  (* s (- x1 x3)) y1)]
+                     (Point. x3 y3 a1 b1))
+      (= p1 p2) (let [s (tangent-slope x1 y1 a1)
+                      x3 (- (- (pwr s 2) x1) x2)
+                      y3 (- (* s (- x1 x3)) y1)]
+                  (Point. x3 y3 a1 b1))))
+  (zero [p] (Point. nil nil a b)))
 
 
 (defn valid-point?
@@ -178,8 +176,6 @@ FieldOps
   (and (= a A) (= b B)))
 
 
-(* N G)
-
 
 (defrecord Signature [r s])
 
@@ -200,8 +196,7 @@ FieldOps
       (byte-array (concat zeros a)))))
 
 
-(defn bytes->num
-  [bs]
+(defn bytes->num [bs]
   (->> bs
        (into [0])
        byte-array
