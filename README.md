@@ -1,6 +1,6 @@
 # programming-bitcoin
 
-A Clojure library designed to ... well, that part is up to you.
+A Clojure library built through an exploration of Jimmy Song's Programming Bitcoin
 
 ## Usage
 
